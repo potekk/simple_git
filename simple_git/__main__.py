@@ -2,7 +2,7 @@ import argparse
 
 import os
 
-from simple_git.simple_git import SimpleGit
+from .simple_git import SimpleGit
 
 
 def _init_arg_parser(cmd_handler):
