@@ -1,8 +1,10 @@
 import os
 
+import shutil
+
 from .tree_node import TreeNode
 from .exceptions import InitException
-from .utils import check_file_exists
+from .utils import check_file_exists, sha1_file
 
 
 class SimpleGit:
@@ -44,6 +46,7 @@ class SimpleGit:
         :param args:
         :return:
         """
+        self.commit()
 
     def status_cmd(self, args):
         """
@@ -72,11 +75,11 @@ class SimpleGit:
 
         # .init file
         sgit_root_node_file = os.path.join(sgit_objects_dir_abs, self.SGIT_ROOT_NODE)
-        self._create_tree_node(filename=sgit_root_node_file, parent=None, files_meta=[])
+        self._create_tree_node(sgit_root_node_file)
 
         # STAG file
         sgit_stag_file = os.path.join(sgit_dir_abs, self.SGIT_STAG)
-        self._create_tree_node(filename=sgit_stag_file, parent=sgit_root_node_file, files_meta=[])
+        self._create_tree_node(sgit_stag_file, sgit_root_node_file)
 
         # HEAD file
         sgit_head_file = os.path.join(sgit_dir_abs, self.SGIT_HEAD)
@@ -85,7 +88,10 @@ class SimpleGit:
     def _get_stag_filename(self):
         return os.path.join(self.SGIT_ROOT_DIR, self.SGIT_DIR, self.SGIT_STAG)
 
-    def _create_tree_node(self, filename, parent, files_meta):
+    def _get_object_path(self):  # TODO change everywhere
+        return os.path.join(self.SGIT_ROOT_DIR, self.SGIT_DIR, self.SGIT_OBJECTS_DIR)
+
+    def _create_tree_node(self, filename, parent=None, files_meta=None):
         with open(filename, 'w') as tn_fd:
             tn_fd.write(TreeNode(parent, files_meta).dumps())
 
@@ -111,3 +117,20 @@ class SimpleGit:
                 files_to_add.append(f)
 
         map(lambda x: tree_node.add_file(x), files_to_add)
+
+    def commit(self):
+        if self.stag_changed():
+            stag_filename = self._get_stag_filename()
+            node_hash = sha1_file(stag_filename)
+            node_filename = os.path.join(self._get_object_path(), node_hash)
+            print 'AAA', stag_filename, node_filename
+            shutil.copyfile(stag_filename, node_filename)
+
+            # update parent pointer
+            stag_node = TreeNode.load(stag_filename)
+            stag_node.parent = node_filename
+            stag_node.dump(stag_filename)
+
+
+    def stag_changed(self):
+        return True  # TODO
