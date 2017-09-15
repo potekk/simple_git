@@ -1,12 +1,30 @@
-import argparse
+import os
+
+from .exceptions import InitException
+from .utils import check_file_exists
 
 
 class SimpleGit:
-    def __init__(self):
-        pass
+    """
+
+    """
+    SGIT_DIR = '.sgit'
+    SGIT_OBJECTS_DIR = 'objects'
+    SGIT_HEAD = 'HEAD'
+    SGIT_FILES_DIR = 'objects/files'
+    SGIT_INIT_TREE = '.init'
+
+    def __init__(self, root_dir):
+        self.SGIT_ROOT_DIR = root_dir
 
     def init_cmd(self, args):
-        print 'init'
+        """
+
+        :param args:
+        :return:
+        """
+        self._assert_init_is_possible()
+        self._create_init_dir()
 
     def add_cmd(self, args):
         print 'add files', args
@@ -17,40 +35,34 @@ class SimpleGit:
     def status_cmd(self, args):
         print 'status'
 
+    def _assert_init_is_possible(self):
+        if check_file_exists(self.SGIT_ROOT_DIR):
+            raise InitException()
 
-def _init_arg_parser(cmd_handler):
-    parser = argparse.ArgumentParser(prog='git', description='Simple Git')
-    subparsers = parser.add_subparsers()
+    def _create_init_dir(self):
+        # .sgit dir
+        sgit_dir_abs = os.path.join(self.SGIT_ROOT_DIR, self.SGIT_DIR)
+        os.mkdir(sgit_dir_abs)
 
-    # init cmd parser
-    parser_init = subparsers.add_parser('init', help='Initialize simple git repository')
-    parser_init.set_defaults(func=cmd_handler.init_cmd)
+        # objects dir
+        sgit_objects_dir_abs = os.path.join(sgit_dir_abs, self.SGIT_DIR)
+        os.mkdir(sgit_objects_dir_abs)
 
-    # add cmd parser
-    parser_add = subparsers.add_parser('add', help='Add file(s) to repository')
-    parser_add.add_argument('files', nargs='+')
-    parser_add.set_defaults(func=cmd_handler.add_cmd)
+        # files dir
+        sgit_files_dir_abs = os.path.join(sgit_objects_dir_abs, self.SGIT_DIR)
+        os.mkdir(sgit_files_dir_abs)
 
-    # commit cmd parser
-    parser_commit = subparsers.add_parser('commit', help='Commit changes')
-    parser_commit.set_defaults(func=cmd_handler.commit_cmd)
+        # .init file
+        sgit_init_tree_file = os.path.join(sgit_dir_abs, self.SGIT_INIT_TREE)
+        self._create_tree_node(filename=sgit_init_tree_file, files=[], parent=None)
 
-    # status cmd parser
-    parser_status = subparsers.add_parser('status', help='Show status of repository')
-    parser_status.set_defaults(func=cmd_handler.status_cmd)
+        # HEAD file
+        sgit_head_file = os.path.join(sgit_dir_abs, self.SGIT_HEAD)
+        self._move_head_pointer(sgit_head_file, sgit_init_tree_file)
 
-    return parser
+    def _create_tree_node(self, filename, files, parent):
+        pass
 
-
-def main():
-    """
-    The main routine
-    """
-    sgit = SimpleGit()
-
-    parser = _init_arg_parser(sgit)
-    args = parser.parse_args()
-    args.func(args)
-
-if __name__ == '__main__':
-    main()
+    def _move_head_pointer(self, sgit_head_file, tree_node_file_to_point):
+        with open(sgit_head_file, 'w') as head_fd:
+            head_fd.write(tree_node_file_to_point)

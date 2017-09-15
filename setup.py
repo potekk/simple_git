@@ -5,5 +5,5 @@ setup(name='sgit',
       description='Simple git',
       author='Piotr Skoroszewski',
       packages=['simple_git'],
-      entry_points={'console_scripts': ['sgit = simple_git.simple_git:main', ], },
+      entry_points={'console_scripts': ['sgit = simple_git.__main__:main', ], },
       )
