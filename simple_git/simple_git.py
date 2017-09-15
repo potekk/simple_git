@@ -9,7 +9,7 @@ class SimpleGit:
         print 'init'
 
     def add_cmd(self, args):
-        print 'add files'
+        print 'add files', args
 
     def commit_cmd(self, args):
         print 'commit'
@@ -18,7 +18,7 @@ class SimpleGit:
         print 'status'
 
 
-def init_arg_parser(cmd_handler):
+def _init_arg_parser(cmd_handler):
     parser = argparse.ArgumentParser(prog='git', description='Simple Git')
     subparsers = parser.add_subparsers()
 
@@ -42,9 +42,15 @@ def init_arg_parser(cmd_handler):
     return parser
 
 
-if __name__ == '__main__':
+def main():
+    """
+    The main routine
+    """
     sgit = SimpleGit()
 
-    parser = init_arg_parser(sgit)
+    parser = _init_arg_parser(sgit)
     args = parser.parse_args()
     args.func(args)
+
+if __name__ == '__main__':
+    main()
