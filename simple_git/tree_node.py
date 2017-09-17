@@ -19,8 +19,6 @@ class FileState:
 
 
 class TreeNode:
-    IGNORE_DIRS = ['.sgit']
-
     def __init__(self, parent=None, files_meta=None):
         self.parent = parent
         self.files_meta = files_meta or {}
@@ -60,37 +58,18 @@ class TreeNode:
         with open(filename) as f:
             return TreeNode.loads(f.read())
 
-    def determine_files_changes(self, prev_node, root_directory):
-        file_states = {}
-        for base_dir, _, filename_list in os.walk(root_directory):
-            for filename in filename_list:
-                filename_abs = os.path.join(base_dir, filename)
-                file_states['filename'] = self.get_file_state(prev_node, filename_abs)
-
-        return file_states
-
-    @staticmethod
-    def get_file_state(prev_node, filename_abs):
-        if filename_abs not in prev_node.file_meta:
-            return FileState.NEW
-        prev_file_meta = prev_node.file_meta['filename_abs']
-        file_hash = sha1_file(filename_abs)
-        if prev_file_meta['hash'] == file_hash:
-            return FileState.THE_SAME
-        else:
-            return FileState.MODIFIED
-
-    def add_file(self, filename):
+    def add_file_to_node(self, filename, obj_path):
         file_hash = sha1_file(filename)
         if filename not in self.files_meta:
-            self.create_new_file_obj(file_hash, filename)
+            self.create_new_file_obj(file_hash, filename, obj_path)
         else:
             prev_file_meta = self.files_meta[filename]
             if prev_file_meta['hash'] == file_hash:
-                pass  # The files match
+                pass  # The files match so dont do anything
             else:
-                os.unlink(prev_file_meta['fobj_filename'])
-                self.create_new_file_obj(file_hash, filename)
+                # remove unused fileobjects
+                # os.unlink(prev_file_meta['fobj_filename'])
+                self.create_new_file_obj(file_hash, filename, obj_path)
 
     def create_new_file_obj(self, file_hash, filename, obj_path):
         stored_file = self.store_file(filename, file_hash, obj_path)

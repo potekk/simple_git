@@ -112,7 +112,7 @@ class SimpleGit:
                 all_add_files.append(add_file)
 
         for add_file in all_add_files:
-            sgit_node.add_file(add_file)
+            sgit_node.add_file_to_node(add_file, self.SGIT_FILES_DIR)
 
     def _commit(self):
         if self._staging_changed():
@@ -144,7 +144,6 @@ class SimpleGit:
         self._print_status(files_status)
 
     def _get_files_status(self, head_files_meta, stag_files_meta):
-        print 'files', head_files_meta, stag_files_meta
         project_file_list = self.list_project_files(self.SGIT_PROJECT_DIR, [self.SGIT_DIR])
         status_map = {}
         for filename in project_file_list:
