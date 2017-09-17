@@ -1,8 +1,6 @@
 import gzip
 import json
-
 import os
-
 import shutil
 
 from .utils import sha1_file

@@ -87,7 +87,8 @@ class SimpleGit:
         if check_file_exists(os.path.join(self.SGIT_ROOT_DIR, self.SGIT_DIR)):
             raise InitException()
 
-    def _create_tree_node(self, filename, parent=None, files_meta=None):
+    @staticmethod
+    def _create_tree_node(filename, parent=None, files_meta=None):
         with open(filename, 'w') as tn_fd:
             tn_fd.write(TreeNode(parent, files_meta).dumps())
 
@@ -144,19 +145,20 @@ class SimpleGit:
         self._print_status(files_status)
 
     def _get_files_status(self, head_files_meta, stag_files_meta):
-        project_file_list = self.list_project_files(self.SGIT_PROJECT_DIR, [self.SGIT_DIR])
+        project_file_list = self._list_project_files(self.SGIT_PROJECT_DIR, [self.SGIT_DIR])
         status_map = {}
         for filename in project_file_list:
             f_hash = sha1_file(filename)
             if filename in head_files_meta:
-                f_status = self.handle_indexed_file(filename, f_hash, head_files_meta, stag_files_meta)
+                f_status = self._handle_indexed_file(filename, f_hash, head_files_meta, stag_files_meta)
             else:
-                f_status = self.handle_not_indexed_file(filename, f_hash, stag_files_meta)
+                f_status = self._handle_not_indexed_file(filename, f_hash, stag_files_meta)
 
             status_map[filename] = f_status
         return status_map
 
-    def handle_indexed_file(self, filename, f_hash, head_files_meta, stag_files_meta):
+    @staticmethod
+    def _handle_indexed_file(filename, f_hash, head_files_meta, stag_files_meta):
         if filename not in stag_files_meta:
             # Staging derives indexed files from last commit
             raise IntegrityException
@@ -176,7 +178,8 @@ class SimpleGit:
 
         return f_status
 
-    def handle_not_indexed_file(self, filename, f_hash, stag_files_meta):
+    @staticmethod
+    def _handle_not_indexed_file(filename, f_hash, stag_files_meta):
         if filename in stag_files_meta:
             s_hash = stag_files_meta[filename]['hash']
             if f_hash == s_hash:
@@ -190,7 +193,8 @@ class SimpleGit:
             f_status = FileState.NEW
         return f_status
 
-    def _print_status(self, files_status):
+    @staticmethod
+    def _print_status(files_status):
         for f, status in files_status.iteritems():
             relative_filepath = os.path.relpath(f)
             if status == FileState.NEW:
@@ -200,14 +204,14 @@ class SimpleGit:
             elif status == FileState.MODIFIED:
                 print relative_filepath, "(modified file)"
 
-    def list_project_files(self, directory, exclude):
+    def _list_project_files(self, directory, exclude):
         all_files = []
         for f in os.listdir(directory):
             if f in exclude:
                 continue  # skip excluded files
             f_abs = os.path.join(directory, f)
             if os.path.isdir(f_abs):
-                all_dir_files = self.list_project_files(f_abs, [])
+                all_dir_files = self._list_project_files(f_abs, [])
                 all_files.extend(all_dir_files)
             else:
                 all_files.append(f_abs)
