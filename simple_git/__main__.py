@@ -7,6 +7,7 @@ from .simple_git import SimpleGit
 
 def _init_arg_parser(cmd_handler):
     parser = argparse.ArgumentParser(prog='git', description='Simple Git')
+    parser.set_defaults(cwd=os.getcwd())
     subparsers = parser.add_subparsers()
 
     # init cmd parser
@@ -33,8 +34,7 @@ def main():
     """
     The main routine
     """
-    sgit_root_dir = os.getcwd()
-    sgit = SimpleGit(sgit_root_dir)
+    sgit = SimpleGit()
 
     parser = _init_arg_parser(sgit)
     args = parser.parse_args()

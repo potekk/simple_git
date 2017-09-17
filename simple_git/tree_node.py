@@ -14,7 +14,8 @@ class FileState:
     """
     NEW = 1
     MODIFIED = 2
-    THE_SAME = 3
+    STAGED = 3
+    THE_SAME = 4
 
 
 class TreeNode:

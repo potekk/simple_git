@@ -1,5 +1,5 @@
-import os
 import hashlib
+import os
 
 
 def check_file_exists(path):
@@ -10,6 +10,7 @@ def sha1_str(input_str):
     m = hashlib.sha1()
     m.update(input_str)
     return m.hexdigest()
+
 
 def sha1_file(input_filename):
     m = hashlib.sha1()
